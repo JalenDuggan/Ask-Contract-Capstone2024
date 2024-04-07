@@ -1,5 +1,6 @@
 import { DragEvent, useState } from "react";
 import PDFDisplay from "./PDFDisplay";
+import axios from "axios"; // Import axios for making HTTP requests
 
 export function FileDrop() {
   const [isOver, setIsOver] = useState(false);
@@ -16,7 +17,7 @@ export function FileDrop() {
     setIsOver(false);
   };
 
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => { //CAN CALL THIS FUNCTION TO SEND PDFS TO DATABASE JUST HAVE TO EDIT UP FUNCTIONALITY
+  const handleDrop = async (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsOver(false);
 
@@ -24,21 +25,23 @@ export function FileDrop() {
     const droppedFiles = Array.from(event.dataTransfer.files);
     setFiles(droppedFiles);
 
-    // Use FileReader to read file content
-    droppedFiles.forEach((file) => {
-      const reader = new FileReader();
+    // Send each file to the server for storage
+    for (const file of droppedFiles) {
+      const formData = new FormData();
+      formData.append("file", file);
 
-      reader.onloadend = () => {
-        console.log(reader.result);
-      };
-
-      reader.onerror = () => {
-        console.error("There was an issue reading the file.");
-      };
-
-      reader.readAsDataURL(file);
-      return reader;
-    });
+      try {
+        // Make an HTTP POST request to your server endpoint
+        await axios.post("/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log(`File "${file.name}" uploaded successfully.`);
+      } catch (error) {
+        console.error(`Error uploading file "${file.name}":`, error);
+      }
+    }
   };
 
   return (
@@ -54,15 +57,13 @@ export function FileDrop() {
         width: "500px",
         border: "1px",
         backgroundColor: isOver ? "lightgray" : "black",
-        marginTop:50,
+        marginTop: 50,
         marginLeft: 200,
         position: "fixed",
         zIndex: 2,
-        
       }}
     >
       <PDFDisplay file={files.length > 0 ? files[0] : null} />
     </div>
-    
   );
 }
