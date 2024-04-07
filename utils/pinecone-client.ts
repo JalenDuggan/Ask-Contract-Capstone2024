@@ -25,6 +25,14 @@ async function getPineconeInstance() {
   return await initializePinecone();
 }
 
+export async function deleteIndex() {
+  const pinecone = await initializePinecone();
+  
+  await pinecone.deleteIndex({indexName: "langchain"})
+  
+}
+
 // Export the promise returned by getPineconeInstance
 export const pinecone = getPineconeInstance();
+// export const pineconeDelete = deleteIndex();
 

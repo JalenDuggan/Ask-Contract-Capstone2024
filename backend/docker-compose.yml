@@ -1,0 +1,23 @@
+services:
+  server:
+    image: capstone2024/backend:1.0
+    environment:
+       OPENAI_API_KEY: /run/secrets/OPENAI_API_KEY
+       PINECONE_API_KEY: /run/secrets/PINECONE_API_KEY
+       PINECONE_ENVIRONMENT: /run/secrets/PINECONE_ENVIRONMENT
+       PINECONE_INDEX_NAME: /run/secrets/PINECONE_INDEX_NAME
+    secrets:
+      - OPENAI_API_KEY
+      - PINECONE_API_KEY
+      - PINECONE_ENVIRONMENT
+      - PINECONE_INDEX_NAME
+secrets:
+  OPENAI_API_KEY:
+    file: openAI_key.txt
+  PINECONE_API_KEY:
+    file: pincone_key.txt
+  PINECONE_ENVIRONMENT:
+    file: pincone_env.txt
+  PINECONE_INDEX_NAME:
+    file: pincone_index.txt
+    
