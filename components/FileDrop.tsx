@@ -31,8 +31,8 @@ export function FileDrop() {
       formData.append("file", file);
 
       try {
-        // Make an HTTP POST request to your server endpoint
-        await axios.post("http://localhost:8080/upload", formData, {
+        // Make an HTTP POST request to the server endpoint for file upload
+        await axios.post("http://localhost:8080/api/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },

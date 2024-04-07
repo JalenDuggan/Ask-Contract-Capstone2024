@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
-import logger from "morgan";
+import loggerM from "morgan";
 import winston from "winston";
+import path from "path";
 
 import multer from "multer"
 import * as fs from 'fs';
@@ -13,8 +14,8 @@ import { PINECONE_INDEX_NAME } from './config/pinecone.js';
 
 const app = express();
 const port = process.env.PORT || 8080 ; // default port to listen
-const upload = multer({ dest: 'uploads/' });
-app.use(logger('dev'));
+// const upload = multer({ dest: 'uploads/' });
+app.use(loggerM('dev'));
 app.use(express.json());
 app.use(cors());
 
@@ -74,33 +75,79 @@ app.post( "/api/chat", ( req, res ) => {
   }) ();
 } );
 
-// Endpoint for handling file uploads
-app.post('/upload', upload.single('file'), async (req, res) => {
-  try {
-    // Read the uploaded file from the temporary location
-    const fileData = req.file.buffer; // Assuming multer saves the file data in req.file.buffer
+// Configure Winston logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
 
-    // Define the destination directory to save the file
-    const destinationDir = 'C:/Users/drrai/Documents/GitHub/capstone2024-ver2/app/docs';
+// Route to handle file upload
+app.post("/api/upload", (req, res) => {
+  // Specify the directory where files should be saved
+  const destinationDir = "../app/docs";
 
-    // Ensure the destination directory exists
-    if (!fs.existsSync(destinationDir)) {
-      fs.mkdirSync(destinationDir, { recursive: true });
+  // Delete existing files in the directory before uploading new files
+  fs.readdir(destinationDir, (err, files) => {
+    if (err) {
+      logger.error("Error reading directory:", err);
+      res.status(500).json({ error: "Failed to delete existing files" });
+      return;
     }
 
-    // Define the file path for saving the uploaded file
-    const filePath = `${destinationDir}${req.file.originalname}`;
+    // Delete each file in the directory
+    files.forEach((file) => {
+      fs.unlink(path.join(destinationDir, file), (err) => {
+        if (err) {
+          logger.error("Error deleting file:", err);
+          res.status(500).json({ error: "Failed to delete existing files" });
+          return;
+        }
+      });
+    });
 
-    // Write the file data to the destination directory
-    fs.writeFileSync(filePath, fileData);
+    // Multer configuration
+    const storage = multer.diskStorage({
+      destination (req, file, cb) {
+        fs.mkdir(destinationDir, { recursive: true }, function (err) {
+          if (err) {
+            logger.error("Error creating destination directory:", err);
+            // Pass error to callback
+            cb(err, destinationDir);
+          } else {
+            // Directory created successfully, proceed
+            cb(null, destinationDir);
+          }
+        });
+      },
+      filename (req, file, cb) {
+        // Generate unique file name
+        cb(null, `${Date.now()}-${file.originalname}`);
+      },
+    });
 
-    // Respond with success message
-    res.status(200).send('File uploaded successfully.');
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    res.status(500).send('Error uploading file.');
-  }
+    const upload = multer({ storage }).single("file");
+
+    // Handle file upload
+    upload(req, res, (err) => {
+      if (err) {
+        logger.error("Error uploading file:", err);
+        res.status(500).json({ error: "Failed to upload file" });
+        return;
+      }
+
+      // File has been uploaded successfully
+      res.status(200).json({ message: "File uploaded successfully" });
+    });
+  });
 });
+
 // start the Express server
 app.listen( port, () => {
     winston.log({
