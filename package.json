@@ -78,5 +78,6 @@
   "resolutions": {
     "langchain": "0.1.9"
   },
+  
   "packageManager": "pnpm@8.6.3"
 }

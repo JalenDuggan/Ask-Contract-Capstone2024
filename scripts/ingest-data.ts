@@ -1,63 +1,23 @@
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { PineconeStore } from 'langchain/vectorstores/pinecone';
-import { pinecone, deleteIndex } from '@/utils/pinecone-client';
+import { pinecone, deleteAllRecords } from '@/utils/pinecone-client';
 import { CustomPDFLoader } from '@/utils/customPDFLoader';
 import { PINECONE_INDEX_NAME, PINECONE_NAME_SPACE } from '@/config/pinecone';
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
-import { exec } from 'child_process'
-// import { curl } from 'node-libcurl';
-
-
-
 
 /* Name of directory to retrieve your files from */
-const filePath = 'docs';
-
-
+const filePath = 'C:\\Users\\mfaiz\\OneDrive\\Documents\\GitHub\\capstone2024-ver2\\app\\docs';
 
 export const run = async () => {
   try {
-    async function deleteIn() {
-      // const pinecone = await initializePinecone();
-      
-      (await pinecone).deleteIndex({indexName: "langchain"})
-      
-    }
-    const i = (await deleteIn());
-    console.log("Index deleted... Output:" + i)
 
-    async function postData(url = "", data = {}) {
-      // Default options are marked with *
-      const response = await fetch(url, {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Api-Key": `${process.env.PINECONE_API_KEY}`,
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: JSON.stringify(data), // body data type must match "Content-Type" header
-        
-      });
-      return response.json(); // parses JSON response into native JavaScript objects
-    }
-    
-    await postData("https://api.pinecone.io/indexes", {
-      "name": "langchain",
-      "dimension": 1536,
-      "metric": "cosine",
-      "spec": {
-         "pod": {
-            "environment": "gcp-starter",
-            "pod_type": "p1.x1",
-            "pods": 1
-         }
-      }
-    }).then((data) => {
+    await deleteAllRecords().then((data) => {
       console.log(data); // JSON data parsed by `data.json()` call
+    })
+    .catch((error) => {
+      console.error('Error:', error);
     });
-    
     
     /*load raw docs from the all files in the directory */
     const directoryLoader = new DirectoryLoader(filePath, {
@@ -81,34 +41,6 @@ export const run = async () => {
     const embeddings = new OpenAIEmbeddings();
     const index = (await pinecone).Index(PINECONE_INDEX_NAME); //change to your own index name
 
-    
-
-
-    
-    function createI() {
-      exec('python ./scripts/createIndex.py', (error, stdout, stderr) => {
-        if (error) {
-          console.log(`error: ${error.message}`);
-        }
-        else if (stderr) {
-          console.log(`stderr: ${stderr}`);
-        }
-        else {
-          console.log(stdout);
-        }
-      })
-    }
-
-    // try{
-    //   await createI();
-    // } catch(error){
-    //   console.log("error: " + error)
-    // }
-
-
-
-
-  
     //embed the PDF documents
     await PineconeStore.fromDocuments(docs, embeddings, {
       pineconeIndex: index,
@@ -124,5 +56,5 @@ export const run = async () => {
 
 (async () => {
   await run();
-  console.log('ingestion complete');
+  console.log('ingestion complete'); 
 })();

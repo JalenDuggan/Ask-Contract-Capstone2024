@@ -20,19 +20,27 @@ async function initializePinecone() {
   }
 }
 
-// Wrap the initialization inside an async function and export it
-async function getPineconeInstance() {
-  return await initializePinecone();
-}
 
-export async function deleteIndex() {
-  const pinecone = await initializePinecone();
-  
-  await pinecone.deleteIndex({indexName: "langchain"})
-  
+
+export async function deleteAllRecords() {
+  // Default options are marked with *
+  const response = await fetch(`https://langchain-89ghesm.svc.gcp-starter.pinecone.io/vectors/delete`, {
+    method: "POST", 
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Api-Key": "edca8e9f-16a6-46f0-89d7-9b92c2cf558f"
+    },
+    body: JSON.stringify({
+      deleteAll: true
+      // namespace: "{ Default }"
+    }),
+  });
+  return response.json(); // parses JSON response into native JavaScript objects
 }
 
 // Export the promise returned by getPineconeInstance
-export const pinecone = getPineconeInstance();
+export const pinecone = initializePinecone();
 // export const pineconeDelete = deleteIndex();
 
+    
