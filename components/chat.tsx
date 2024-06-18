@@ -21,6 +21,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
 import { usePathname, useRouter } from 'next/navigation'
+import { FileDrop } from './FileDrop'
 
 const IS_PREVIEW = process.env.VERCEL_ENV === 'preview'
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -58,7 +59,11 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     })
   return (
     <>
-      <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
+
+<FileDrop
+      />
+      
+      <div className={cn('pb-[200px] pt-4 md:pt-10 pl-[800px]', className)}>
         {messages.length ? (
           <>
             <ChatList messages={messages} />
@@ -67,7 +72,9 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         ) : (
           <EmptyScreen setInput={setInput} />
         )}
+        
       </div>
+      
       <ChatPanel
         id={id}
         isLoading={isLoading}
@@ -78,6 +85,8 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         input={input}
         setInput={setInput}
       />
+
+      
 
       <Dialog open={previewTokenDialog} onOpenChange={setPreviewTokenDialog}>
         <DialogContent>
