@@ -17,8 +17,7 @@
 - **Deployment**: Hosted on Vercel for easy and efficient server-side deployment.
 
 ## 🖥️ Demo
+![askcontract1](https://github.com/user-attachments/assets/c663dd34-a8e7-43f5-a7da-0b1839d7fb89)
 
-![Upload Functionality](./documentation/upload_functionality.gif)
-![Chat Functionality](./documentation/chat_functionality.gif)
 
 
